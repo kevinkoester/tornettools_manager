@@ -50,6 +50,9 @@ def get_tornet_files(date: datetime.date):
 
 def tornet_stage(date: datetime.date):
 	data_dict = get_dirs(date)
+	if pathlib.Path(data_dict["output"]).exists():
+		print("Output dir already exists. Skipping stage...")
+		return
 	cmd = "tornettools stage {consensus} {server} {userstats} --onionperf_data_path {onionperf} --bandwidth_data_path {bandwidth} --geoip geoip --prefix {output_dir}"
 	cmd = cmd.format(consensus=data_dict["consensus"], server=data_dict["server"], userstats="userstats.csv", onionperf=data_dict["onionperf"], bandwidth=data_dict["bandwidth"], output_dir=data_dict["output"])
 	call_cmd(cmd)
