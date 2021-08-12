@@ -30,7 +30,7 @@ def call_cmd(cmd_str: str = None, cmd_list = None, cwd = None):
 
 def extract(path: pathlib.Path):
 	cmd = "tar xaf {}".format(path.name)
-	call_cmd(cmd, path.parent)
+	call_cmd(cmd, cwd=path.parent)
 
 def get_dirs(data_date: datetime.date):
 	data_dir = pathlib.Path("data/{}-{:02d}".format(data_date.year, data_date.month))
