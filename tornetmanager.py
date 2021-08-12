@@ -10,16 +10,20 @@ from collections import defaultdict
 
 from subprocess import Popen, PIPE
 
+from argparse import ArgumentParser, RawTextHelpFormatter
+
 DATA_URL_TEMPLATES = [
-		"https://collector.torproject.org/archive/relay-descriptors/consensuses/consensuses-{year}-{month}.tar.xz",
-		"https://collector.torproject.org/archive/relay-descriptors/server-descriptors/server-descriptors-{year}-{month}.tar.xz",
-		"https://collector.torproject.org/archive/onionperf/onionperf-{year}-{month}.tar.xz",
-		"https://metrics.torproject.org/bandwidth.csv?start={year}-{month}-01&end={year}-{month}-30"
+		"https://collector.torproject.org/archive/relay-descriptors/consensuses/consensuses-{year}-{month:02d}.tar.xz",
+		"https://collector.torproject.org/archive/relay-descriptors/server-descriptors/server-descriptors-{year}-{month:02d}.tar.xz",
+		"https://collector.torproject.org/archive/onionperf/onionperf-{year}-{month:02d}.tar.xz",
+		"https://metrics.torproject.org/bandwidth.csv?start={year}-{month:02d}-01&end={year}-{month:02d}-30"
 		]
 
-def call_cmd(cmd: str, cwd = None):
-	print("Calling \"{}\"".format(cmd))
-	process = Popen(cmd.split(" "), cwd = cwd)
+def call_cmd(cmd_str: str = None, cmd_list = None, cwd = None):
+	if cmd_list is None and cmd_str is not None:
+		cmd_list = cmd_str.split(" ")
+	print("Calling \"{}\"".format(" ".join(cmd_list)))
+	process = Popen(cmd_list, cwd = cwd)
 	output, err = process.communicate()
 	return output
 
@@ -29,10 +33,10 @@ def extract(path: pathlib.Path):
 	call_cmd(cmd, path.parent)
 
 def get_dirs(data_date: datetime.date):
-	data_dir = pathlib.Path("data/{}-{}".format(data_date.year, data_date.month))
-	consensus_dir = data_dir / "consensuses-{year}-{month}".format(year=data_date.year, month=data_date.month)
-	server_dir = data_dir / "server-descriptors-{year}-{month}".format(year=data_date.year, month=data_date.month)
-	onion_dir = data_dir / "onionperf-{year}-{month}".format(year=data_date.year, month=data_date.month)
+	data_dir = pathlib.Path("data/{}-{:02d}".format(data_date.year, data_date.month))
+	consensus_dir = data_dir / "consensuses-{year}-{month:02d}".format(year=data_date.year, month=data_date.month)
+	server_dir = data_dir / "server-descriptors-{year}-{month:02d}".format(year=data_date.year, month=data_date.month)
+	onion_dir = data_dir / "onionperf-{year}-{month:02d}".format(year=data_date.year, month=data_date.month)
 	bandwidth = data_dir / "bandwidth.csv"
 	output_dir = data_dir / "output"
 
@@ -51,6 +55,9 @@ def tornet_stage(date: datetime.date):
 	call_cmd(cmd)
 
 def tornet_generate(date: datetime.date, network_scale: float, name: str):
+	if pathlib.Path(name).exists():
+		print("\"{}\" already exists! Skipping generation of files...".format(name))
+		return
 	files = get_tornet_files(date)
 	relayinfo = ""
 	userinfo = ""
@@ -69,7 +76,7 @@ def get_data(data_date: datetime.date):
 	for data_template in DATA_URL_TEMPLATES:
 		url = data_template.format(year=data_date.year, month=data_date.month)
 		filename = url.split("/")[-1].split("?")[0]
-		data_dir = pathlib.Path("data/{}-{}".format(data_date.year, data_date.month))
+		data_dir = pathlib.Path("data/{}-{:02d}".format(data_date.year, data_date.month))
 		data_dir.mkdir(parents=True, exist_ok=True)
 		output_path = data_dir / filename
 		if not output_path.is_file():
@@ -79,11 +86,13 @@ def get_data(data_date: datetime.date):
 				with open(output_path, "wb") as output_file:
 					output_file.write(resp.content)
 					extract(output_path)
+			else:
+				print("Failed to get data with status code {}".format(resp.status_code))
 		else:
 			print("{} already exists...".format(output_path))
 
 def run_dirty(dirty_list, date, scale = 0.01):
-	experiment_name = "{}-{}-dirty-{}-scale-{}".format(date.year, date.month, ",".join(map(str, dirty_list)), scale)
+	experiment_name = "{}-{:02d}-dirty-{}-scale-{}".format(date.year, date.month, ",".join(map(str, dirty_list)), scale)
 	experiments_to_run = []
 	get_data(date)
 	files = get_tornet_files(date)
@@ -118,8 +127,8 @@ def run_dirty(dirty_list, date, scale = 0.01):
 	
 	# run experiments
 	for experiment_path in experiments_to_run:
-		cmd = "tornettools simulate -a \"-i node,ram\" {}".format(experiment_path)
-		call_cmd(cmd)
+		cmd = ["tornettools", "simulate", "-a", "-i node,ram", "{}".format(experiment_path)]
+		call_cmd(cmd_list=cmd)
 		cmd = "tornettools parse {}".format(experiment_path)
 		call_cmd(cmd)
 
@@ -132,7 +141,19 @@ def run_dirty(dirty_list, date, scale = 0.01):
 
 	# run experiment
 
-test_date = datetime.date.fromisoformat("2020-11-01")
-run_dirty([1, 10, 30, 60, 120, 180, 240, 300, 1200, 1800], test_date, 0.01)
-#run_dirty([1, 1800], test_date, 0.001)
 
+def main():
+	parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
+	parser.add_argument("-d", "--date", dest="date", help="Date to use. Format YYYY-MM", type=lambda s: datetime.datetime.strptime(s, '%Y-%m'), required=True)
+	parser.add_argument("--dirty", dest="dirty", help="List of dirty times to use", type=int, nargs="+", required=True)
+	parser.add_argument("--scale", dest="scale", help="Scale to use for the network", type=float, default=0.01)
+
+	args = parser.parse_args()
+
+	print(args)
+	#run_dirty([1, 10, 30, 60, 120, 180, 240, 300, 1200, 1800], test_date, 0.01)
+	#run_dirty([1, 1800], test_date, 0.001)
+	run_dirty(args.dirty, args.date, args.scale)
+
+if __name__ == "__main__":
+	main()
