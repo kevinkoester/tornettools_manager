@@ -10,3 +10,6 @@
 [submodule "dependencies/shadow"]
 	path = dependencies/shadow
 	url = https://github.com/shadow/shadow
+[submodule "dependencies/tgen"]
+	path = dependencies/tgen
+	url = https://github.com/shadow/tgen
