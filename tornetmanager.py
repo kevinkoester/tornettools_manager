@@ -9,6 +9,7 @@ import traceback
 from collections import defaultdict
 
 from subprocess import Popen, PIPE
+from multiprocessing import cpu_count
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 
@@ -131,13 +132,13 @@ def run_dirty(dirty_list, date, scale = 0.01):
 	# run experiments
 	for experiment_path in experiments_to_run:
 		if not (pathlib.Path(experiment_path) / "shadow.log").exists():
-			cmd = ["tornettools", "simulate", "-a", "-i node,ram", "{}".format(experiment_path)]
+			cmd = ["tornettools", "simulate", "-a", "-i node,ram --workers={} --seed=666".format(cpu_count()), "{}".format(experiment_path)]
 			call_cmd(cmd_list=cmd)
 		cmd = "tornettools parse {}".format(experiment_path)
 		call_cmd(cmd)
 	tor_metrics_file = ""
 	for f in files:
-		if "tor_metrics" in f:
+		if "tor_metrics" in f.name:
 			tor_metrics_file = f
 	cmd = "tornettools plot {} --tor_metrics_path {} --prefix {}/pfs".format(" ".join(map(str,experiments_to_run)), tor_metrics_file, experiment_name)
 	call_cmd(cmd)
