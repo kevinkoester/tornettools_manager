@@ -118,7 +118,7 @@ def run_dirty(dirty_list, date, scale = 0.01):
 	
 	# run experiments
 	for experiment_path in experiments_to_run:
-		cmd = "tornettools simulate {}".format(experiment_path)
+		cmd = "tornettools simulate -a \"-i node,ram\" {}".format(experiment_path)
 		call_cmd(cmd)
 		cmd = "tornettools parse {}".format(experiment_path)
 		call_cmd(cmd)
