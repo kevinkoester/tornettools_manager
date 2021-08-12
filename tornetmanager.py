@@ -130,10 +130,13 @@ def run_dirty(dirty_list, date, scale = 0.01):
 	
 	# run experiments
 	for experiment_path in experiments_to_run:
-		cmd = ["tornettools", "simulate", "-a", "-i node,ram", "{}".format(experiment_path)]
-		call_cmd(cmd_list=cmd)
+		if not (pathlib.Path(experiment_path) / "shadow.log").exists():
+			cmd = ["tornettools", "simulate", "-a", "-i node,ram", "{}".format(experiment_path)]
+			call_cmd(cmd_list=cmd)
 		cmd = "tornettools parse {}".format(experiment_path)
 		call_cmd(cmd)
+	cmd = "tornettools plot {} --prefix pdfs".format(" ".join(experiments_to_run))
+	call_cmd(cmd)
 
 
 
