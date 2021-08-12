@@ -1,3 +1,12 @@
 [submodule "tmodel-ccs2018.github.io"]
 	path = tmodel-ccs2018.github.io
 	url = https://github.com/tmodel-ccs2018/tmodel-ccs2018.github.io.git
+[submodule "dependencies/oniontrace"]
+	path = dependencies/oniontrace
+	url = git@git.informatik.uni-hamburg.de:kkoester/oniontrace.git
+[submodule "dependencies/tornettools"]
+	path = dependencies/tornettools
+	url = git@git.informatik.uni-hamburg.de:kkoester/tornettools.git
+[submodule "dependencies/shadow"]
+	path = dependencies/shadow
+	url = https://github.com/shadow/shadow
