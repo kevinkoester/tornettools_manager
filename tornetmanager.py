@@ -5,6 +5,7 @@ import datetime
 import pathlib
 import shutil
 import traceback
+import calendar
 
 from collections import defaultdict
 
@@ -17,7 +18,7 @@ DATA_URL_TEMPLATES = [
 		"https://collector.torproject.org/archive/relay-descriptors/consensuses/consensuses-{year}-{month:02d}.tar.xz",
 		"https://collector.torproject.org/archive/relay-descriptors/server-descriptors/server-descriptors-{year}-{month:02d}.tar.xz",
 		"https://collector.torproject.org/archive/onionperf/onionperf-{year}-{month:02d}.tar.xz",
-		"https://metrics.torproject.org/bandwidth.csv?start={year}-{month:02d}-01&end={year}-{month:02d}-30"
+		"https://metrics.torproject.org/bandwidth.csv?start={year}-{month:02d}-01&end={year}-{month:02d}-{end_day:02d}"
 		]
 
 def call_cmd(cmd_str: str = None, cmd_list = None, cwd = None):
@@ -77,8 +78,9 @@ def tornet_generate(date: datetime.date, network_scale: float, name: str):
 
 
 def get_data(data_date: datetime.date):
+	month_range = calendar.monthrange(data_date.year, data_date.month)
 	for data_template in DATA_URL_TEMPLATES:
-		url = data_template.format(year=data_date.year, month=data_date.month)
+		url = data_template.format(year=data_date.year, month=data_date.month, end_day=month_range[1])
 		filename = url.split("/")[-1].split("?")[0]
 		data_dir = pathlib.Path("data/{}-{:02d}".format(data_date.year, data_date.month))
 		data_dir.mkdir(parents=True, exist_ok=True)
