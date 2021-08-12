@@ -135,7 +135,11 @@ def run_dirty(dirty_list, date, scale = 0.01):
 			call_cmd(cmd_list=cmd)
 		cmd = "tornettools parse {}".format(experiment_path)
 		call_cmd(cmd)
-	cmd = "tornettools plot {} --prefix pdfs".format(" ".join(experiments_to_run))
+	tor_metrics_file = ""
+	for f in files:
+		if "tor_metrics" in f:
+			tor_metrics_file = f
+	cmd = "tornettools plot {} --tor_metrics_path {} --prefix {}/pfs".format(" ".join(map(str,experiments_to_run)), tor_metrics_file, experiment_name)
 	call_cmd(cmd)
 
 
