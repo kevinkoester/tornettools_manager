@@ -97,7 +97,7 @@ def get_data(data_date: datetime.date):
 		else:
 			print("{} already exists...".format(output_path))
 
-def run_dirty(dirty_list, date, scale = 0.01):
+def run_dirty(dirty_list, date, output_path, scale = 0.01):
 	experiment_name = "{}-{:02d}-dirty-{}-scale-{}".format(date.year, date.month, ",".join(map(str, dirty_list)), scale)
 	experiments_to_run = []
 	get_data(date)
@@ -106,7 +106,7 @@ def run_dirty(dirty_list, date, scale = 0.01):
 		tornet_stage(date)
 	vanilla_name = "vanilla"
 	# generate base experiment
-	experiment_path = pathlib.Path(experiment_name) / "experiments"
+	experiment_path = pathlib.Path(output_path) / pathlib.Path(experiment_name) / "experiments"
 	vanilla_path = experiment_path / vanilla_name
 	tornet_generate(date, scale, vanilla_path)
 	experiments_to_run.append(vanilla_path)
@@ -142,7 +142,7 @@ def run_dirty(dirty_list, date, scale = 0.01):
 	for f in files:
 		if "tor_metrics" in f.name:
 			tor_metrics_file = f
-	cmd = "tornettools plot {} --tor_metrics_path {} --prefix {}/pfs".format(" ".join(map(str,experiments_to_run)), tor_metrics_file, experiment_name)
+	cmd = "tornettools plot {} --tor_metrics_path {} --prefix {}/pdf".format(" ".join(map(str,experiments_to_run)), tor_metrics_file, experiment_name)
 	call_cmd(cmd)
 
 
@@ -160,13 +160,14 @@ def main():
 	parser.add_argument("-d", "--date", dest="date", help="Date to use. Format YYYY-MM", type=lambda s: datetime.datetime.strptime(s, '%Y-%m'), required=True)
 	parser.add_argument("--dirty", dest="dirty", help="List of dirty times to use", type=int, nargs="+", required=True)
 	parser.add_argument("--scale", dest="scale", help="Scale to use for the network", type=float, default=0.01)
+	parser.add_argument("--output", dest="output", help="Output path", type=str, default=".")
 
 	args = parser.parse_args()
 
 	print(args)
 	#run_dirty([1, 10, 30, 60, 120, 180, 240, 300, 1200, 1800], test_date, 0.01)
 	#run_dirty([1, 1800], test_date, 0.001)
-	run_dirty(args.dirty, args.date, args.scale)
+	run_dirty(dirty_list=args.dirty, date=args.date, output_path=args.output, scale = args.scale)
 
 if __name__ == "__main__":
 	main()
