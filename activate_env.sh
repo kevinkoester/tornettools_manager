@@ -1,4 +1,4 @@
 #!/bin/bash
 
-export PATH=$PATH:bin/bin
+export PATH=$(pwd)/bin/bin:$PATH
 source ./venv/bin/activate
