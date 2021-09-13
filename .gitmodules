@@ -13,3 +13,6 @@
 [submodule "dependencies/tgen"]
 	path = dependencies/tgen
 	url = https://github.com/shadow/tgen
+[submodule "dependencies/shadow-plugin-tor"]
+	path = dependencies/shadow-plugin-tor
+	url = https://github.com/shadow/shadow-plugin-tor/
