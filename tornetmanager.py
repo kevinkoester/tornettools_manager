@@ -73,7 +73,8 @@ def tornet_generate(date: datetime.date, network_scale: float, name: str):
 			relayinfo = f
 		if "userinfo" in f.name:
 			userinfo = f
-	cmd = "tornettools generate {relayinfo} {userinfo} {tmodel} --network_scale {scale} --prefix {name}".format(relayinfo=relayinfo, userinfo=userinfo, tmodel=tmodel, scale=network_scale, name=name)
+	events = "STREAM,CIRC,CIRC_MINOR,ORCONN,BW,STREAM_BW,CIRC_BW,CONN_BW"
+	cmd = "tornettools generate {relayinfo} {userinfo} {tmodel} --network_scale {scale} --prefix {name} --events {events}".format(relayinfo=relayinfo, userinfo=userinfo, tmodel=tmodel, scale=network_scale, name=name, events=events)
 	call_cmd(cmd)
 
 
@@ -158,7 +159,7 @@ def run_dirty(dirty_list, date, output_path, scale = 0.01):
 def main():
 	parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
 	parser.add_argument("-d", "--date", dest="date", help="Date to use. Format YYYY-MM", type=lambda s: datetime.datetime.strptime(s, '%Y-%m'), required=True)
-	parser.add_argument("--dirty", dest="dirty", help="List of dirty times to use", type=int, nargs="+", required=True)
+	parser.add_argument("--dirty", dest="dirty", help="List of dirty times to use", type=int, nargs="+", default=[])
 	parser.add_argument("--scale", dest="scale", help="Scale to use for the network", type=float, default=0.01)
 	parser.add_argument("--output", dest="output", help="Output path", type=str, default=".")
 
