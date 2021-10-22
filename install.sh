@@ -7,7 +7,7 @@ INSTALL_PREFIX=${SCRIPT_DIR}/bin
 
 function install_shadow {
 	pushd ${SCRIPT_DIR}/dependencies/shadow
-	./setup build --prefix  ${INSTALL_PREFIX}
+	./setup build --use-cpu-timer --prefix  ${INSTALL_PREFIX}
 	./setup install
 	popd
 }

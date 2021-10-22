@@ -16,3 +16,9 @@
 [submodule "dependencies/shadow-plugin-tor"]
 	path = dependencies/shadow-plugin-tor
 	url = https://github.com/shadow/shadow-plugin-tor/
+[submodule "dependencies/tor"]
+	path = dependencies/tor
+	url = git@git.informatik.uni-hamburg.de:kkoester/tor.git
+[submodule "dependencies/heaptrack"]
+	path = dependencies/heaptrack
+	url = git@git.informatik.uni-hamburg.de:kkoester/heaptrack.git
