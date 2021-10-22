@@ -9,7 +9,7 @@
 	url = git@git.informatik.uni-hamburg.de:kkoester/tornettools.git
 [submodule "dependencies/shadow"]
 	path = dependencies/shadow
-	url = https://github.com/shadow/shadow
+	url = git@git.informatik.uni-hamburg.de:kkoester/shadow.git
 [submodule "dependencies/tgen"]
 	path = dependencies/tgen
 	url = https://github.com/shadow/tgen
