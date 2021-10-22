@@ -74,7 +74,8 @@ def tornet_generate(date: datetime.date, network_scale: float, name: str):
 		if "userinfo" in f.name:
 			userinfo = f
 	events = "STREAM,CIRC,CIRC_MINOR,ORCONN,BW,STREAM_BW,CIRC_BW,CONN_BW"
-	cmd = "tornettools generate {relayinfo} {userinfo} {tmodel} --network_scale {scale} --prefix {name} --events {events}".format(relayinfo=relayinfo, userinfo=userinfo, tmodel=tmodel, scale=network_scale, name=name, events=events)
+	bin_dir = pathlib.Path("bin")
+	cmd = "tornettools generate {relayinfo} {userinfo} {tmodel} --network_scale {scale} --prefix {name} --events {events} --shadow-prefix {shadow_prefix}".format(relayinfo=relayinfo, userinfo=userinfo, tmodel=tmodel, scale=network_scale, name=name, events=events, shadow_prefix=bin_dir.absolute())
 	call_cmd(cmd)
 
 
