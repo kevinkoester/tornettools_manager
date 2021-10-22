@@ -21,11 +21,11 @@ DATA_URL_TEMPLATES = [
 		"https://metrics.torproject.org/bandwidth.csv?start={year}-{month:02d}-01&end={year}-{month:02d}-{end_day:02d}"
 		]
 
-def call_cmd(cmd_str: str = None, cmd_list = None, cwd = None):
+def call_cmd(cmd_str: str = None, cmd_list = None, cwd = None, env = None):
 	if cmd_list is None and cmd_str is not None:
 		cmd_list = cmd_str.split(" ")
 	print("Calling \"{}\"".format(" ".join(cmd_list)))
-	process = Popen(cmd_list, cwd = cwd)
+	process = Popen(cmd_list, cwd = cwd, env = env)
 	output, err = process.communicate()
 	return output
 
