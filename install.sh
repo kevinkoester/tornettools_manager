@@ -15,7 +15,7 @@ function install_shadow {
 function install_shadow_plugin_tor {
 	pushd ${SCRIPT_DIR}/dependencies/shadow-plugin-tor
 	yes | ./setup dependencies
-	yes | ./setup build --tor-prefix ../tor --prefix  ${INSTALL_PREFIX}
+	yes | ./setup build --tor-prefix ../tor --prefix  ${INSTALL_PREFIX} --shadow-root ${INSTALL_PREFIX}
 	./setup install
 	popd
 }
