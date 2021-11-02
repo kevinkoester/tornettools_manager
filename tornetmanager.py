@@ -13,6 +13,7 @@ from subprocess import Popen, PIPE
 from multiprocessing import cpu_count
 
 from argparse import ArgumentParser, RawTextHelpFormatter
+import os
 
 DATA_URL_TEMPLATES = [
 		"https://collector.torproject.org/archive/relay-descriptors/consensuses/consensuses-{year}-{month:02d}.tar.xz",
@@ -21,13 +22,19 @@ DATA_URL_TEMPLATES = [
 		"https://metrics.torproject.org/bandwidth.csv?start={year}-{month:02d}-01&end={year}-{month:02d}-{end_day:02d}"
 		]
 
-def call_cmd(cmd_str: str = None, cmd_list = None, cwd = None, env = None):
+def call_cmd(cmd_str: str = None, cmd_list = None, cwd = None, env = None, shell = False, stdout = None):
 	if cmd_list is None and cmd_str is not None:
 		cmd_list = cmd_str.split(" ")
+		cmd_list = list(filter(None, cmd_list))
 	print("Calling \"{}\"".format(" ".join(cmd_list)))
-	process = Popen(cmd_list, cwd = cwd, env = env)
+	process = Popen(cmd_list, cwd = cwd, env = env, shell = shell, stdout = stdout)
 	output, err = process.communicate()
 	return output
+
+def get_shadow_version():
+	cmd = ["shadow --version 2>&1 | perl -lne '/Shadow v([\d]+)\.[\d]+/ && print $1'"]
+	version = call_cmd(cmd_list=cmd, shell=True, stdout=PIPE)
+	return int(version)
 
 
 def extract(path: pathlib.Path):
@@ -50,13 +57,25 @@ def get_tornet_files(date: datetime.date):
 	files = [x for x in p if x.is_file()]
 	return files
 
+def should_stage(date: datetime.date):
+	return True
+	files = get_tornet_files(date)
+	if len(files) > 0:
+		if get_shadow_version() < 2:
+			return pathlib.Path(get_dirs(date)["output"]).exists()
+		else:
+			for f in files:
+				if "networkinfo_staging.gml" in str(f):
+					return False
+	return True
+
 def tornet_stage(date: datetime.date):
 	data_dict = get_dirs(date)
-	if pathlib.Path(data_dict["output"]).exists():
-		print("Output dir already exists. Skipping stage...")
-		return
-	cmd = "tornettools stage {consensus} {server} {userstats} --onionperf_data_path {onionperf} --bandwidth_data_path {bandwidth} --geoip geoip --prefix {output_dir}"
-	cmd = cmd.format(consensus=data_dict["consensus"], server=data_dict["server"], userstats="userstats.csv", onionperf=data_dict["onionperf"], bandwidth=data_dict["bandwidth"], output_dir=data_dict["output"])
+	tmodel = "tmodel-ccs2018.github.io"
+	if get_shadow_version() < 2:
+		tmodel = ""
+	cmd = "tornettools stage {consensus} {server} {userstats} {tmodel} --onionperf_data_path {onionperf} --bandwidth_data_path {bandwidth} --geoip geoip --prefix {output_dir}"
+	cmd = cmd.format(consensus=data_dict["consensus"], server=data_dict["server"], userstats="userstats.csv", onionperf=data_dict["onionperf"], bandwidth=data_dict["bandwidth"], output_dir=data_dict["output"], tmodel=tmodel)
 	call_cmd(cmd)
 
 def tornet_generate(date: datetime.date, network_scale: float, name: str):
@@ -66,6 +85,7 @@ def tornet_generate(date: datetime.date, network_scale: float, name: str):
 	files = get_tornet_files(date)
 	relayinfo = ""
 	userinfo = ""
+	network_info_file = ""
 	tmodel = "tmodel-ccs2018.github.io"
 	for f in files:
 		print(f)
@@ -73,9 +93,14 @@ def tornet_generate(date: datetime.date, network_scale: float, name: str):
 			relayinfo = f
 		if "userinfo" in f.name:
 			userinfo = f
+		if "networkinfo_staging.gml" in f.name:
+			network_info_file = f
 	events = "STREAM,CIRC,CIRC_MINOR,ORCONN,BW,STREAM_BW,CIRC_BW,CONN_BW"
 	bin_dir = pathlib.Path("bin")
-	cmd = "tornettools generate {relayinfo} {userinfo} {tmodel} --network_scale {scale} --prefix {name} --events {events} --shadow-prefix {shadow_prefix}".format(relayinfo=relayinfo, userinfo=userinfo, tmodel=tmodel, scale=network_scale, name=name, events=events, shadow_prefix=bin_dir.absolute())
+	if get_shadow_version() < 2:
+		network_info_file = ""
+	call_cmd("tornettools --version")
+	cmd = "tornettools generate {relayinfo} {userinfo} {netinfo} {tmodel} --network_scale {scale} --prefix {name} --events {events} --shadow-prefix {shadow_prefix}".format(relayinfo=relayinfo, userinfo=userinfo, tmodel=tmodel, scale=network_scale, name=name, events=events, shadow_prefix=bin_dir.absolute(), netinfo=network_info_file)
 	call_cmd(cmd)
 
 
@@ -104,7 +129,7 @@ def run_dirty(dirty_list, date, output_path, scale = 0.01, seed=1):
 	experiments_to_run = []
 	get_data(date)
 	files = get_tornet_files(date)
-	if len(files) == 0:
+	if should_stage(date):
 		tornet_stage(date)
 	vanilla_name = "vanilla"
 	# generate base experiment
@@ -137,7 +162,11 @@ def run_dirty(dirty_list, date, output_path, scale = 0.01, seed=1):
 	# run experiments
 	for experiment_path in experiments_to_run:
 		if not (pathlib.Path(experiment_path) / "shadow.log").exists():
-			cmd = ["tornettools", "simulate", "-a", "-i node,ram --workers={} --seed={}".format(cpu_count(), seed), "{}".format(experiment_path)]
+			if get_shadow_version() < 2:
+				shadow_parameters = "-i node,ram --workers={} --seed={}".format(cpu_count(), seed)
+			else:
+				shadow_parameters = "--parallelism={} --seed={} --template-directory=shadow.data.template".format(cpu_count(), seed)
+			cmd = ["tornettools", "simulate", "-a", shadow_parameters, "{}".format(experiment_path)]
 			call_cmd(cmd_list=cmd)
 		cmd = "tornettools parse {}".format(experiment_path)
 		call_cmd(cmd)
