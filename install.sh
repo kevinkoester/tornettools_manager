@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -xe
 
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
@@ -48,7 +48,7 @@ function install_shadow_plugin_tor {
 }
 
 function install_tgen {
-	mkdir ${SCRIPT_DIR}/dependencies/tgen/build
+	mkdir -p ${SCRIPT_DIR}/dependencies/tgen/build
 	pushd ${SCRIPT_DIR}/dependencies/tgen/build
 	cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
 	make -j5
@@ -65,7 +65,7 @@ function install_tornettools {
 	popd
 }
 function install_oniontrace {
-	mkdir ${SCRIPT_DIR}/dependencies/oniontrace/build
+	mkdir -p ${SCRIPT_DIR}/dependencies/oniontrace/build
 	pushd dependencies/oniontrace/build
 	cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
 	make -j5
