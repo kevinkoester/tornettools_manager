@@ -42,7 +42,7 @@ function install_shadow_plugin_tor {
 	git checkout $TOR_COMMIT
 	popd
 	yes | ./setup dependencies
-	yes | ./setup build --tor-prefix ../tor --prefix  ${INSTALL_PREFIX} --shadow-root ${INSTALL_PREFIX}
+	yes | ./setup build --tor-prefix ../tor --prefix  ${INSTALL_PREFIX} --shadow-root ${INSTALL_PREFIX} ${USE_ENCRYPTION}
 	./setup install
 	popd
 }
@@ -87,6 +87,23 @@ function install_tgentools {
 	popd
 }
 
+optstring=":e"
+while getopts ${optstring} arg; do
+	case ${arg} in
+	e)
+		echo "Enabling encryption"
+		USE_ENCRYPTION="--use-encryption"
+		;;
+	:)
+		echo "$0: Must supply an argument to -$OPTARG." >&2
+		exit 1
+		;;
+	?)
+		echo "Invalid option: -${OPTARG}."
+		exit 2
+		;;
+	esac
+done
 
 #git submodule update --init --recursive
 VENV_DIR=${SCRIPT_DIR}/venv
