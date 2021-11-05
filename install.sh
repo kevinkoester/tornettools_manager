@@ -20,7 +20,7 @@ function install_shadow {
 	if [ "$(get_shadow_version)" -ge 2 ]; then
 		./setup build --prefix  ${INSTALL_PREFIX}
 	else
-		./setup build --enable-cpu-timer --prefix  ${INSTALL_PREFIX}
+		./setup build --use-cpu-timer --prefix  ${INSTALL_PREFIX}
 	fi
 	./setup install
 	popd
