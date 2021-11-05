@@ -114,6 +114,7 @@ fi
 source ${SCRIPT_DIR}/activate_env.sh
 
 pip install pyelftools
+pip install requests
 
 install_shadow
 if [ "$(get_shadow_version)" -ge 2 ]; then
