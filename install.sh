@@ -5,22 +5,34 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 INSTALL_PREFIX=${SCRIPT_DIR}/bin
 
-TOR_COMMIT=main
-#SHADOW_COMMIT=v1.15.0
-SHADOW_COMMIT=v2.0.0
-TORNETTOOLS_COMMIT=mods2
+TOR_COMMIT=heaptrack
+SHADOW_COMMIT=master
+TORNETTOOLS_COMMIT=mods
 
 function get_shadow_version {
 	shadow --version 2>&1 | perl -lne '/Shadow v([\d]+)\.[\d]+/ && print $1'
 }
 
+function install_heaptrack {
+	mkdir -p ${SCRIPT_DIR}/dependencies/heaptrack/build
+	pushd ${SCRIPT_DIR}/dependencies/heaptrack/build
+	cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+	make -j4
+	make install
+	popd
+}
+
 function install_shadow {
 	pushd ${SCRIPT_DIR}/dependencies/shadow
 	git checkout $SHADOW_COMMIT
-	if [ "$(get_shadow_version)" -ge 2 ]; then
-		./setup build --prefix  ${INSTALL_PREFIX}
-	else
+	set +e
+	./setup build --help | grep use-cpu-timer > /dev/null
+	retcode=$?
+	set -e
+	if [ "$retcode" -eq "0"]; then
 		./setup build --use-cpu-timer --prefix  ${INSTALL_PREFIX}
+	else
+		./setup build --prefix  ${INSTALL_PREFIX}
 	fi
 	./setup install
 	popd
@@ -116,6 +128,7 @@ source ${SCRIPT_DIR}/activate_env.sh
 pip install pyelftools
 pip install requests
 
+install_heaptrack
 install_shadow
 if [ "$(get_shadow_version)" -ge 2 ]; then
 	install_tor
