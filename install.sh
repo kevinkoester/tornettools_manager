@@ -53,8 +53,9 @@ function install_shadow_plugin_tor {
 	pushd ../tor
 	git checkout $TOR_COMMIT
 	popd
+	git checkout $SHADOW_TOR_PLUGIN_COMMIT
 	yes | ./setup dependencies
-	yes | ./setup build --tor-prefix ../tor --prefix  ${INSTALL_PREFIX} --shadow-root ${INSTALL_PREFIX} ${USE_ENCRYPTION}
+	yes | ./setup build --tor-prefix ../tor --prefix  ${INSTALL_PREFIX} --shadow-root ${INSTALL_PREFIX} ${USE_ENCRYPTION} ${USE_HEAPTRACK} -j $(nproc)
 	./setup install
 	popd
 }
@@ -99,12 +100,16 @@ function install_tgentools {
 	popd
 }
 
-optstring=":e"
+optstring=":e:h"
 while getopts ${optstring} arg; do
 	case ${arg} in
 	e)
 		echo "Enabling encryption"
 		USE_ENCRYPTION="--use-encryption"
+		;;
+	h)
+		echo "Enabling heaptrack"
+		USE_HEAPTRACK="--use-heaptrack"
 		;;
 	:)
 		echo "$0: Must supply an argument to -$OPTARG." >&2
