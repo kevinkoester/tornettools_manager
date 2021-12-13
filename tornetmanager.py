@@ -58,11 +58,10 @@ def get_tornet_files(date: datetime.date):
 	return files
 
 def should_stage(date: datetime.date):
-	return True
 	files = get_tornet_files(date)
 	if len(files) > 0:
 		if get_shadow_version() < 2:
-			return pathlib.Path(get_dirs(date)["output"]).exists()
+			return not pathlib.Path(get_dirs(date)["output"]).exists()
 		else:
 			for f in files:
 				if "networkinfo_staging.gml" in str(f):
