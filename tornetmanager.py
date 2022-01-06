@@ -123,7 +123,7 @@ def get_data(data_date: datetime.date):
 		else:
 			print("{} already exists...".format(output_path))
 
-def run_dirty(dirty_list, date, output_path, scale = 0.01, seed=1):
+def run_dirty(dirty_list, date, output_path, scale = 0.01, seed=1, skip_parse=False):
 	experiment_name = "{}-{:02d}-seed-{}-dirty-{}-scale-{}".format(date.year, date.month, seed, ",".join(map(str, dirty_list)), scale)
 	experiments_to_run = []
 	get_data(date)
@@ -168,12 +168,16 @@ def run_dirty(dirty_list, date, output_path, scale = 0.01, seed=1):
 			cmd = ["tornettools", "simulate", "-a", shadow_parameters, "{}".format(experiment_path)]
 			call_cmd(cmd_list=cmd)
 		cmd = "tornettools parse {}".format(experiment_path)
-		call_cmd(cmd)
-	tor_metrics_file = ""
+		if not skip_parse:
+			call_cmd(cmd)
+	tor_metrics_file = None
 	for f in files:
 		if "tor_metrics" in f.name:
 			tor_metrics_file = f
-	cmd = "tornettools plot {} --tor_metrics_path {} --prefix {}/pdf".format(" ".join(map(str,experiments_to_run)), tor_metrics_file, project_path)
+	tor_metrics_argument = ""
+	if tor_metrics_file is not None:
+		tor_metrics_argument = "--tor_metrics_path {}".format(tor_metrics_file)
+	cmd = "tornettools plot {} {} --prefix {}/pdf".format(" ".join(map(str,experiments_to_run)), tor_metrics_argument, project_path)
 	call_cmd(cmd)
 
 
@@ -193,13 +197,14 @@ def main():
 	parser.add_argument("--scale", dest="scale", help="Scale to use for the network", type=float, default=0.01)
 	parser.add_argument("--output", dest="output", help="Output path", type=str, default=".")
 	parser.add_argument("--seed", dest="seed", help="Seed for the simulation", type=int, default=1)
+	parser.add_argument("--skip-parse", dest="skip_parse", help="Skip the parse phase", action="store_true")
 
 	args = parser.parse_args()
 
 	print(args)
 	#run_dirty([1, 10, 30, 60, 120, 180, 240, 300, 1200, 1800], test_date, 0.01)
 	#run_dirty([1, 1800], test_date, 0.001)
-	run_dirty(dirty_list=args.dirty, date=args.date, output_path=args.output, scale = args.scale, seed = args.seed)
+	run_dirty(dirty_list=args.dirty, date=args.date, output_path=args.output, scale = args.scale, seed = args.seed, skip_parse=args.skip_parse)
 
 if __name__ == "__main__":
 	main()
