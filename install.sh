@@ -5,7 +5,9 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 INSTALL_PREFIX=${SCRIPT_DIR}/bin
 
-TOR_COMMIT=heaptrack
+#TOR_COMMIT=heaptrack
+TOR_COMMIT=tor-0.3.5.7
+SHADOW_TOR_PLUGIN_COMMIT=heaptrack
 SHADOW_COMMIT=master
 TORNETTOOLS_COMMIT=mods
 
