@@ -3,22 +3,22 @@
 	url = https://github.com/tmodel-ccs2018/tmodel-ccs2018.github.io.git
 [submodule "dependencies/oniontrace"]
 	path = dependencies/oniontrace
-	url = git@git.informatik.uni-hamburg.de:kkoester/oniontrace.git
+	url = https://github.com/kevinkoester/oniontrace
 [submodule "dependencies/tornettools"]
 	path = dependencies/tornettools
-	url = git@git.informatik.uni-hamburg.de:kkoester/tornettools.git
+	url = https://github.com/kevinkoester/tornettools
 [submodule "dependencies/shadow"]
 	path = dependencies/shadow
-	url = git@git.informatik.uni-hamburg.de:kkoester/shadow.git
+	url = https://github.com/kevinkoester/shadow
 [submodule "dependencies/tgen"]
 	path = dependencies/tgen
 	url = https://github.com/shadow/tgen
 [submodule "dependencies/shadow-plugin-tor"]
 	path = dependencies/shadow-plugin-tor
-	url = git@git.informatik.uni-hamburg.de:kkoester/shadow-plugin-tor.git
+	url = https://github.com/kevinkoester/shadow-plugin-tor
 [submodule "dependencies/tor"]
 	path = dependencies/tor
-	url = git@git.informatik.uni-hamburg.de:kkoester/tor.git
+	url = https://gitlab.torproject.org/tpo/core/tor
 [submodule "dependencies/heaptrack"]
 	path = dependencies/heaptrack
-	url = git@git.informatik.uni-hamburg.de:kkoester/heaptrack.git
+	url = https://github.com/kevinkoester/heaptrack
